@@ -130,7 +130,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         ),
                         Text(
                           textAlign: TextAlign.center,
-                          'No messages yet, but you can \nstart conversation with $fullname',
+                          'No messages yet, but you can start conversation \nwith $fullname appointing for $service',
                           style: GoogleFonts.robotoCondensed(
                             fontSize: 16,
                             color: Color.fromARGB(255, 240, 128, 128),
