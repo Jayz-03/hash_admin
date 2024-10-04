@@ -32,7 +32,10 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
       if (data == null) {
         print('No approved appointments found.');
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() {
+            _isLoading = false;
+            _approvedAppointments = [];
+          });
         }
         return;
       }
@@ -85,48 +88,70 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
                 color: Color.fromARGB(255, 228, 142, 136),
               ),
             )
-          : ListView.builder(
-              itemCount: _approvedAppointments.length,
-              itemBuilder: (context, index) {
-                final appointment = _approvedAppointments[index];
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                  elevation: 4,
-                  color: Colors.white,
-                  child: ListTile(
-                    leading:
-                        Image.asset("assets/images/hash-logo.png", height: 30),
-                    title: Text(
-                      '${appointment['firstName']} ${appointment['lastName']}',
-                      style: GoogleFonts.robotoCondensed(
-                        fontSize: 18,
-                        color: Color.fromARGB(255, 228, 142, 136),
-                        fontWeight: FontWeight.bold,
+          : _approvedAppointments.isEmpty
+              ? Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/images/okokok.png',
+                        width: 200,
+                        height: 200,
                       ),
-                    ),
-                    subtitle: Text(
-                      '${appointment['service']} - ${appointment['date']}',
-                      style: GoogleFonts.robotoCondensed(
-                        fontSize: 12,
-                        color: Colors.grey,
+                      Text(
+                        textAlign: TextAlign.center,
+                        'Currently, there is no approved appointments yet.',
+                        style: GoogleFonts.robotoCondensed(
+                          fontSize: 16,
+                          color: Color.fromARGB(255, 240, 128, 128),
+                        ),
                       ),
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MessagesScreen(
-                            userId: appointment['userId'],
-                            appointmentId: appointment['appointmentId'],
-                            senderId: 'q5INLrhJXOZXwo6hrInJHlWGmWU2',
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _approvedAppointments.length,
+                  itemBuilder: (context, index) {
+                    final appointment = _approvedAppointments[index];
+                    return Card(
+                      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                      elevation: 4,
+                      color: Colors.white,
+                      child: ListTile(
+                        leading: Image.asset("assets/images/hash-logo.png",
+                            height: 30),
+                        title: Text(
+                          '${appointment['firstName']} ${appointment['lastName']}',
+                          style: GoogleFonts.robotoCondensed(
+                            fontSize: 18,
+                            color: Color.fromARGB(255, 228, 142, 136),
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
+                        subtitle: Text(
+                          '${appointment['service']} - ${appointment['date']}',
+                          style: GoogleFonts.robotoCondensed(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MessagesScreen(
+                                userId: appointment['userId'],
+                                appointmentId: appointment['appointmentId'],
+                                senderId: 'q5INLrhJXOZXwo6hrInJHlWGmWU2',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }

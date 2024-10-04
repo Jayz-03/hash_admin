@@ -161,7 +161,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                         decoration: BoxDecoration(
                           color: isSender
                               ? Color.fromARGB(255, 228, 142, 136)
-                              : Colors.grey[300],
+                              : Colors.grey,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(

@@ -127,6 +127,10 @@ class _AdminAppointmentScreenState extends State<AdminAppointmentScreen>
 
       if (data == null) {
         print('No appointments found.');
+        setState(() {
+          _upcomingAppointments = [];
+          _pastAppointments = [];
+        });
         return;
       }
 
@@ -236,7 +240,6 @@ class _AdminAppointmentScreenState extends State<AdminAppointmentScreen>
                 ),
               ],
             ),
-            // Display buttons based on the status
             if (appointment['status'] == 'Pending')
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -307,7 +310,7 @@ class _AdminAppointmentScreenState extends State<AdminAppointmentScreen>
                             userId: appointment['userId'],
                             appointmentId: appointment['appointmentId'],
                             senderId:
-                                'q5INLrhJXOZXwo6hrInJHlWGmWU2', // Admin ID
+                                'q5INLrhJblbDP7QQ77AI5f5dn3u2', // Admin sender ID
                           ),
                         ),
                       );
@@ -343,49 +346,113 @@ class _AdminAppointmentScreenState extends State<AdminAppointmentScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          title: Text(
-            'Manage Appointments',
-            style: GoogleFonts.robotoCondensed(
-                fontSize: 20,
-                color: Color.fromARGB(255, 240, 128, 128),
-                fontWeight: FontWeight.bold),
-          ),
-          centerTitle: true,
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: Color.fromARGB(255, 240, 128, 128),
-            labelColor: Color.fromARGB(255, 240, 128, 128),
-            unselectedLabelColor: Colors.grey,
-            labelStyle: GoogleFonts.robotoCondensed(fontSize: 16),
-            tabs: const [
-              Tab(text: 'Upcoming'),
-              Tab(text: 'Past'),
-            ],
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: Text(
+          'Manage Appointments',
+          style: GoogleFonts.robotoCondensed(
+            fontSize: 20,
+            color: Color.fromARGB(255, 240, 128, 128),
+            fontWeight: FontWeight.bold,
           ),
         ),
-        body: Container(
-          color: Colors.white,
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              ListView.builder(
-                itemCount: _upcomingAppointments.length,
-                itemBuilder: (context, index) {
-                  final appointment = _upcomingAppointments[index];
-                  return _buildAppointmentCard(appointment);
-                },
-              ),
-              ListView.builder(
-                itemCount: _pastAppointments.length,
-                itemBuilder: (context, index) {
-                  final appointment = _pastAppointments[index];
-                  return _buildAppointmentCard(appointment);
-                },
-              ),
-            ],
-          ),
-        ));
+        centerTitle: true,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Color.fromARGB(255, 240, 128, 128),
+          labelColor: Color.fromARGB(255, 240, 128, 128),
+          unselectedLabelColor: Colors.grey,
+          labelStyle: GoogleFonts.robotoCondensed(fontSize: 16),
+          tabs: const [
+            Tab(text: 'Upcoming'),
+            Tab(text: 'Past'),
+          ],
+        ),
+      ),
+      body: Container(
+        color: Colors.white,
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            Column(
+              children: [
+                if (_upcomingAppointments.isEmpty)
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/okokok.png',
+                            width: 200,
+                            height: 200,
+                          ),
+                          Text(
+                            textAlign: TextAlign.center,
+                            'Currently, there is no upcoming appointment list here.',
+                            style: GoogleFonts.robotoCondensed(
+                              fontSize: 16,
+                              color: Color.fromARGB(255, 240, 128, 128),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _upcomingAppointments.length,
+                      itemBuilder: (context, index) {
+                        final appointment = _upcomingAppointments[index];
+                        return _buildAppointmentCard(appointment);
+                      },
+                    ),
+                  ),
+              ],
+            ),
+            Column(
+              children: [
+                if (_pastAppointments.isEmpty)
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/okokok.png',
+                            width: 200,
+                            height: 200,
+                          ),
+                          Text(
+                            textAlign: TextAlign.center,
+                            'Currently, there is no past appointment list here.',
+                            style: GoogleFonts.robotoCondensed(
+                              fontSize: 16,
+                              color: Color.fromARGB(255, 240, 128, 128),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _pastAppointments.length,
+                      itemBuilder: (context, index) {
+                        final appointment = _pastAppointments[index];
+                        return _buildAppointmentCard(appointment);
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
