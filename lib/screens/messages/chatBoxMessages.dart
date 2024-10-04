@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,8 +15,9 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
       FirebaseDatabase.instance.ref().child('Appointment');
   final DatabaseReference _usersRef =
       FirebaseDatabase.instance.ref().child('users');
+  late StreamSubscription _appointmentsSubscription;
   List<Map<String, dynamic>> _approvedAppointments = [];
-  bool _isLoading = true; // Track loading state
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -22,13 +25,15 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
     _fetchApprovedAppointments();
   }
 
-  void _fetchApprovedAppointments() async {
-    _appointmentsRef.onValue.listen((event) async {
+  void _fetchApprovedAppointments() {
+    _appointmentsSubscription = _appointmentsRef.onValue.listen((event) async {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
 
       if (data == null) {
         print('No approved appointments found.');
-        setState(() => _isLoading = false);
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
         return;
       }
 
@@ -41,7 +46,6 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
           final appointmentData =
               Map<String, dynamic>.from(userAppointments[appointmentId]);
           if (appointmentData['status'] == 'Approved') {
-            // Fetch user data from the 'users' node
             final userSnapshot = await _usersRef.child(userId).get();
             if (userSnapshot.exists) {
               final userData = userSnapshot.value as Map<dynamic, dynamic>;
@@ -49,7 +53,6 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
               appointmentData['lastName'] = userData['lastName'];
             }
 
-            // Add userId and appointmentId for reference
             appointmentData['userId'] = userId;
             appointmentData['appointmentId'] = appointmentId;
             approved.add(appointmentData);
@@ -57,11 +60,19 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
         }
       }
 
-      setState(() {
-        _approvedAppointments = approved;
-        _isLoading = false; // Set loading to false when data is ready
-      });
+      if (mounted) {
+        setState(() {
+          _approvedAppointments = approved;
+          _isLoading = false;
+        });
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    _appointmentsSubscription.cancel();
+    super.dispose();
   }
 
   @override
