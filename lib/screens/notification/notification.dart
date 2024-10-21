@@ -1,21 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({super.key});
+class NotificationScreen  extends StatefulWidget {
+  const NotificationScreen ({super.key});
 
   @override
   _NotificationScreenState createState() => _NotificationScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
-  final _auth = FirebaseAuth.instance;
+class _NotificationScreenState extends State<NotificationScreen > {
   late final DatabaseReference _appointmentsRef;
   late StreamSubscription<DatabaseEvent> _appointmentsSubscription;
   int _unreadCount = 0;
@@ -23,8 +21,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   void initState() {
     super.initState();
-    _appointmentsRef =
-        FirebaseDatabase.instance.ref('Appointment/${_auth.currentUser?.uid}');
+    _appointmentsRef = FirebaseDatabase.instance.ref('Appointment');
     _appointmentsSubscription = _appointmentsRef.onValue.listen((event) {
       _calculateUnreadCount();
       setState(() {});
@@ -42,10 +39,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final data = appointmentsSnapshot.value as Map<dynamic, dynamic>?;
 
     if (data != null) {
-      final unreadCount = data.values.where((appointment) {
-        final appointmentData = appointment as Map<dynamic, dynamic>;
-        return appointmentData['userActive'] == 'Yes';
-      }).length;
+      int unreadCount = 0;
+
+      // Iterate through each user's appointments
+      data.forEach((userId, appointments) {
+        final appointmentData = appointments as Map<dynamic, dynamic>;
+        unreadCount += appointmentData.values.where((appointment) {
+          return (appointment as Map)['userActive'] == 'Yes';
+        }).length;
+      });
 
       setState(() {
         _unreadCount = unreadCount;
@@ -58,9 +60,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final data = appointmentsSnapshot.value as Map<dynamic, dynamic>?;
 
     if (data != null) {
-      for (var entry in data.entries) {
-        final appointmentRef = _appointmentsRef.child(entry.key);
-        await appointmentRef.update({'userActive': 'No'});
+      for (var userEntry in data.entries) {
+        final userAppointments = userEntry.value as Map<dynamic, dynamic>;
+        for (var appointmentEntry in userAppointments.entries) {
+          final appointmentRef = _appointmentsRef
+              .child(userEntry.key)
+              .child(appointmentEntry.key);
+          await appointmentRef.update({'userActive': 'No'});
+        }
       }
 
       setState(() {
@@ -153,20 +160,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   );
                 }
 
-                final appointments = data.entries.map((entry) {
-                  final appointment = entry.value as Map<dynamic, dynamic>;
-                  return {
-                    'key': entry.key,
-                    'service': appointment['service'] as String,
-                    'date': appointment['date'] as String,
-                    'time': appointment['time'] as String,
-                    'timestamp': appointment['timestamp'] as int,
-                    'userActive': appointment['userActive'] as String,
-                  };
-                }).toList();
+                List<Map<String, dynamic>> appointments = [];
 
-                appointments
-                    .sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
+                // Loop through all users' appointments
+                data.forEach((userId, userAppointments) {
+                  (userAppointments as Map).forEach((appointmentId, appointmentData) {
+                    final appointment = appointmentData as Map;
+                    appointments.add({
+                      'userId': userId,
+                      'key': appointmentId,
+                      'service': appointment['service'] as String,
+                      'date': appointment['date'] as String,
+                      'time': appointment['time'] as String,
+                      'timestamp': appointment['timestamp'] as int,
+                      'userActive': appointment['userActive'] as String,
+                    });
+                  });
+                });
+
+                // Sort by timestamp
+                appointments.sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
 
                 return ListView.builder(
                   itemCount: appointments.length,
@@ -203,7 +216,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     text: TextSpan(
                                       children: [
                                         TextSpan(
-                                          text: 'You have an appointment for ',
+                                          text: 'Appointment for ',
                                           style: GoogleFonts.robotoCondensed(
                                             fontSize: 16,
                                             color: Colors.black,
@@ -233,7 +246,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                           ),
                                         ),
                                         TextSpan(
-                                          text: ' from ',
+                                          text: ' at ',
                                           style: GoogleFonts.robotoCondensed(
                                             fontSize: 16,
                                             color: Colors.black,
@@ -250,7 +263,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                       ],
                                     ),
                                   ),
-                                  onTap: () {}),
+                                  onTap: () {}), // You can add more actions here
                               Align(
                                 alignment: Alignment.bottomRight,
                                 child: Padding(

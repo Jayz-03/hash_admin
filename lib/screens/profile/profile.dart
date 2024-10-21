@@ -14,7 +14,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   User? currentUser = FirebaseAuth.instance.currentUser;
-  DatabaseReference databaseRef = FirebaseDatabase.instance.ref('admins');
+  DatabaseReference databaseRef = FirebaseDatabase.instance.ref('users');
   Map<String, dynamic>? userData;
   bool isLoading = true;
 
@@ -172,14 +172,6 @@ class CustomListTile {
 }
 
 List<CustomListTile> customListTiles = [
-  CustomListTile(
-    icon: PhosphorIconsFill.lock,
-    title: "Password & Security",
-  ),
-  CustomListTile(
-    title: "Personal Information",
-    icon: PhosphorIconsFill.user,
-  ),
   CustomListTile(
     title: "Sign Out",
     icon: PhosphorIconsFill.signOut,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hash_admin/screens/messages/videoCall.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class MessagesScreen extends StatefulWidget {
@@ -29,6 +30,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   void initState() {
     super.initState();
     _fetchUserData();
+    _listenForVideoCallRequests();
   }
 
   void _fetchUserData() async {
@@ -63,6 +65,126 @@ class _MessagesScreenState extends State<MessagesScreen> {
     });
 
     _messageController.clear();
+  }
+
+  void _listenForVideoCallRequests() {
+    _chatRef
+        .child(
+            'calls/${widget.userId}/${widget.appointmentId}/videoCallApproval')
+        .onValue
+        .listen((event) {
+      final data = event.snapshot.value as Map?;
+      if (data != null && data['status'] == 'pending') {
+        _showVideoCallRequestDialog();
+      }
+    });
+  }
+
+  void _showVideoCallRequestDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              PhosphorIcon(
+                PhosphorIconsFill.videoCamera,
+                size: 100,
+                color: Color.fromARGB(255, 228, 142, 136),
+              ),
+              SizedBox(height: 10),
+              Center(
+                child: Text(
+                  'Video Call Request',
+                  style: GoogleFonts.robotoCondensed(
+                      fontSize: 20,
+                      color: Color.fromARGB(255, 228, 142, 136),
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Center(
+                child: Text(
+                  '$fullname has requested a video call.',
+                  style: GoogleFonts.robotoCondensed(
+                    fontSize: 14,
+                    color: Color.fromARGB(255, 228, 142, 136),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                onPressed: () {
+                  _approveVideoCall();
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  'Approve',
+                  style: GoogleFonts.robotoCondensed(
+                      fontSize: 16, color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              TextButton(
+                onPressed: () {
+                  _rejectVideoCall();
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  'Reject',
+                  style: GoogleFonts.robotoCondensed(
+                      fontSize: 16, color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _approveVideoCall() {
+    _chatRef
+        .child(
+            'calls/${widget.userId}/${widget.appointmentId}/videoCallApproval')
+        .update({'status': 'approved'});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Video call approved.'),
+      backgroundColor: Colors.green,
+    ));
+  }
+
+  void _rejectVideoCall() {
+    _chatRef
+        .child(
+            'calls/${widget.userId}/${widget.appointmentId}/videoCallApproval')
+        .update({'status': 'rejected'});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Video call rejected.'),
+      backgroundColor: Colors.red,
+    ));
   }
 
   @override
@@ -101,6 +223,107 @@ class _MessagesScreenState extends State<MessagesScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: PhosphorIcon(
+              PhosphorIconsFill.videoCamera,
+              size: 30,
+              color: Color.fromARGB(255, 228, 142, 136),
+            ),
+            onPressed: () async {
+              // Check video call approval status in Firebase
+              DatabaseEvent event = await _chatRef
+                  .child(
+                      'calls/${widget.userId}/${widget.appointmentId}/videoCallApproval')
+                  .once();
+
+              DataSnapshot snapshot = event.snapshot;
+
+              // Safely checking if the snapshot exists and value contains the status
+              if (snapshot.exists &&
+                  (snapshot.value as Map?)?['status'] == 'approved') {
+                // If approved, proceed to call
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VideoCallScreen(),
+                  ),
+                );
+              } else {
+                // Show a message if the request is still pending or rejected
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          PhosphorIcon(
+                            PhosphorIconsFill.videoCamera,
+                            size: 100,
+                            color: Color.fromARGB(255, 228, 142, 136),
+                          ),
+                          SizedBox(height: 10),
+                          Center(
+                            child: Text(
+                              'Video Call Not Approved',
+                              style: GoogleFonts.robotoCondensed(
+                                fontSize: 20,
+                                color: Color.fromARGB(255, 240, 128, 128),
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Center(
+                            child: Text(
+                              'The video call request is still pending or rejected.',
+                              style: GoogleFonts.robotoCondensed(
+                                fontSize: 14,
+                                color: Color.fromARGB(255, 240, 128, 128),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      Center(
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text(
+                            'OK',
+                            style: GoogleFonts.robotoCondensed(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(255, 240, 128, 128),
+                            textStyle: GoogleFonts.robotoCondensed(
+                              fontSize: 16,
+                              color: Color.fromARGB(255, 240, 128, 128),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+          SizedBox(width: 10),
+        ],
       ),
       body: Column(
         children: [
