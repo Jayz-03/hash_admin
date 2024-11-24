@@ -20,6 +20,8 @@ class VideoCallScreen extends StatefulWidget {
 class _VideoCallScreenState extends State<VideoCallScreen> {
   int? _remoteUid;
   bool _localUserJoined = false;
+  bool _isMuted = false;
+  bool _isVideoOff = false;
   late RtcEngine _engine;
 
   @override
@@ -86,6 +88,24 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     await _engine.release();
   }
 
+  Future<void> _toggleMute() async {
+    setState(() {
+      _isMuted = !_isMuted;
+    });
+    await _engine.muteLocalAudioStream(_isMuted);
+  }
+
+  Future<void> _toggleVideo() async {
+    setState(() {
+      _isVideoOff = !_isVideoOff;
+    });
+    await _engine.muteLocalVideoStream(_isVideoOff);
+  }
+
+  Future<void> _switchCamera() async {
+    await _engine.switchCamera();
+  }
+
   @override
   void dispose() {
     _leaveChannel();
@@ -97,27 +117,18 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Iconsax.arrow_left_2, color: Color.fromARGB(255, 0, 86, 99)),
+          icon: Icon(Iconsax.arrow_left_2, color: Color.fromARGB(255, 228, 142, 136)),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         title: Text(
           'Telemedicine',
-          style: GoogleFonts.lexend(
+          style: GoogleFonts.robotoCondensed(
             fontSize: 16,
-            color: Color.fromARGB(255, 0, 86, 99),
+            color: Color.fromARGB(255, 228, 142, 136),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.call_end, color: Colors.red),
-            onPressed: () async {
-              await _leaveChannel();
-              Navigator.pop(context);
-            },
-          ),
-        ],
       ),
       body: Stack(
         children: [
@@ -137,8 +148,43 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
                             canvas: const VideoCanvas(uid: 0),
                           ),
                         )
-                      : const CircularProgressIndicator(color: Color.fromARGB(255, 0, 86, 99)),
+                      : const CircularProgressIndicator(color: Color.fromARGB(255, 228, 142, 136)),
                 ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 30,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.switch_camera, color: Color.fromARGB(255, 228, 142, 136)),
+                    onPressed: _switchCamera,
+                  ),
+                  IconButton(
+                    icon: Icon(
+                        _isVideoOff ? Icons.videocam_off : Icons.videocam,
+                        color: Color.fromARGB(255, 228, 142, 136)),
+                    onPressed: _toggleVideo,
+                  ),
+                  IconButton(
+                    icon: Icon(
+                        _isMuted ? Icons.mic_off : Icons.mic,
+                        color: Color.fromARGB(255, 228, 142, 136)),
+                    onPressed: _toggleMute,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.call_end, color: Colors.red),
+                    onPressed: () async {
+                      await _leaveChannel();
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
               ),
             ),
           ),
@@ -159,13 +205,12 @@ class _VideoCallScreenState extends State<VideoCallScreen> {
     } else {
       return Text(
         'Waiting for the patient to join...',
-        style: GoogleFonts.lexend(
+        style: GoogleFonts.robotoCondensed(
           fontSize: 16,
-          color: Color.fromARGB(255, 0, 86, 99),
+          color: Color.fromARGB(255, 228, 142, 136),
         ),
         textAlign: TextAlign.center,
       );
     }
   }
 }
-
