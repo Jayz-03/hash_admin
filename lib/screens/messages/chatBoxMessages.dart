@@ -1,7 +1,7 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hash_admin/screens/messages/messages.dart';
 
@@ -43,25 +43,34 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
       List<Map<String, dynamic>> approved = [];
 
       for (var userId in data.keys) {
-        final userAppointments = data[userId] as Map<dynamic, dynamic>;
+        final userAppointments = data[userId] as Map<dynamic, dynamic>? ?? {};
 
         for (var appointmentId in userAppointments.keys) {
           final appointmentData =
-              Map<String, dynamic>.from(userAppointments[appointmentId]);
+              Map<String, dynamic>.from(userAppointments[appointmentId] ?? {});
+          
           if (appointmentData['status'] == 'Approved') {
             final userSnapshot = await _usersRef.child(userId).get();
             if (userSnapshot.exists) {
-              final userData = userSnapshot.value as Map<dynamic, dynamic>;
-              appointmentData['firstName'] = userData['firstName'];
-              appointmentData['lastName'] = userData['lastName'];
+              final userData =
+                  Map<String, dynamic>.from(userSnapshot.value as Map<dynamic, dynamic>? ?? {});
+              appointmentData['firstName'] = userData['firstName'] ?? 'Unknown';
+              appointmentData['lastName'] = userData['lastName'] ?? 'User';
             }
 
             appointmentData['userId'] = userId;
             appointmentData['appointmentId'] = appointmentId;
+            appointmentData['timestamp'] = appointmentData['timestamp'] ?? 0; 
             approved.add(appointmentData);
           }
         }
       }
+
+      approved.sort((a, b) {
+        final aTimestamp = a['timestamp'] ?? 0;
+        final bTimestamp = b['timestamp'] ?? 0;
+        return bTimestamp.compareTo(aTimestamp);
+      });
 
       if (mounted) {
         setState(() {
@@ -80,6 +89,8 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String senderId = FirebaseAuth.instance.currentUser?.uid ?? 'Unknown'; // Fallback to 'Unknown'
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: _isLoading
@@ -130,7 +141,7 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
                           ),
                         ),
                         subtitle: Text(
-                          '${appointment['service']} - ${appointment['date']}',
+                          '${appointment['service'] ?? 'No service'} - ${appointment['date'] ?? 'No date'} - ${appointment['time'] ?? 'No time'}',
                           style: GoogleFonts.robotoCondensed(
                             fontSize: 12,
                             color: Colors.grey,
@@ -141,9 +152,9 @@ class _ChatBoxScreenState extends State<ChatBoxScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => MessagesScreen(
-                                userId: appointment['userId'],
-                                appointmentId: appointment['appointmentId'],
-                                senderId: 'q5INLrhJXOZXwo6hrInJHlWGmWU2',
+                                userId: appointment['userId'] ?? 'Unknown',
+                                appointmentId: appointment['appointmentId'] ?? 'Unknown',
+                                senderId: senderId,
                               ),
                             ),
                           );

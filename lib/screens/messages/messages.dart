@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hash_admin/screens/messages/videoCall.dart';
+import 'package:intl/intl.dart'; // Add this import for time formatting
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class MessagesScreen extends StatefulWidget {
@@ -23,6 +24,8 @@ class MessagesScreen extends StatefulWidget {
 class _MessagesScreenState extends State<MessagesScreen> {
   final TextEditingController _messageController = TextEditingController();
   final DatabaseReference _chatRef = FirebaseDatabase.instance.ref();
+  final ScrollController _scrollController =
+      ScrollController(); // Controller for auto-scrolling
   String fullname = '';
   String service = '';
 
@@ -230,96 +233,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
               size: 30,
               color: Color.fromARGB(255, 228, 142, 136),
             ),
-            onPressed: () async {
-              // Check video call approval status in Firebase
-              DatabaseEvent event = await _chatRef
-                  .child(
-                      'calls/${widget.userId}/${widget.appointmentId}/videoCallApproval')
-                  .once();
-
-              DataSnapshot snapshot = event.snapshot;
-
-              // Safely checking if the snapshot exists and value contains the status
-              if (snapshot.exists &&
-                  (snapshot.value as Map?)?['status'] == 'approved') {
-                // If approved, proceed to call
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => VideoCallScreen(),
-                  ),
-                );
-              } else {
-                // Show a message if the request is still pending or rejected
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    content: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          PhosphorIcon(
-                            PhosphorIconsFill.videoCamera,
-                            size: 100,
-                            color: Color.fromARGB(255, 228, 142, 136),
-                          ),
-                          SizedBox(height: 10),
-                          Center(
-                            child: Text(
-                              'Video Call Not Approved',
-                              style: GoogleFonts.robotoCondensed(
-                                fontSize: 20,
-                                color: Color.fromARGB(255, 240, 128, 128),
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Center(
-                            child: Text(
-                              'The video call request is still pending or rejected.',
-                              style: GoogleFonts.robotoCondensed(
-                                fontSize: 14,
-                                color: Color.fromARGB(255, 240, 128, 128),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      Center(
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text(
-                            'OK',
-                            style: GoogleFonts.robotoCondensed(
-                              fontSize: 16,
-                              color: Colors.white,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 240, 128, 128),
-                            textStyle: GoogleFonts.robotoCondensed(
-                              fontSize: 16,
-                              color: Color.fromARGB(255, 240, 128, 128),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VideoCallScreen(),
+                ),
+              );
             },
           ),
           SizedBox(width: 10),
@@ -369,30 +289,60 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     .sort((a, b) => a['timestamp'].compareTo(b['timestamp']));
 
                 return ListView.builder(
+                  controller: _scrollController, // Added ScrollController
                   itemCount: messageList.length,
                   itemBuilder: (context, index) {
                     bool isSender =
                         messageList[index]['senderId'] == widget.senderId;
-                    return Align(
-                      alignment: isSender
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 5, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: isSender
-                              ? Color.fromARGB(255, 228, 142, 136)
-                              : Colors.grey,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          messageList[index]['message'],
-                          style: GoogleFonts.robotoCondensed(
-                            color: Colors.white,
+                    DateTime messageTime = DateTime.fromMillisecondsSinceEpoch(
+                        messageList[index]['timestamp']);
+                    String formattedTime = DateFormat('hh:mm a')
+                        .format(messageTime); // Format time
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: isSender
+                            ? MainAxisAlignment.end
+                            : MainAxisAlignment.start,
+                        children: [
+                          Column(
+                            crossAxisAlignment: isSender
+                                ? CrossAxisAlignment.end
+                                : CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 10.0,
+                                  horizontal: 16.0,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSender
+                                      ? Color.fromARGB(255, 228, 142, 136)
+                                      : Color.fromARGB(255, 238, 238, 238),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  messageList[index]['message'],
+                                  style: GoogleFonts.robotoCondensed(
+                                    fontSize: 14,
+                                    color:
+                                        isSender ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                formattedTime, // Show time
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                        ],
                       ),
                     );
                   },
@@ -436,17 +386,25 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(
-                    Icons.send,
-                    color: Color.fromARGB(255, 228, 142, 136),
-                  ),
-                  onPressed: () => sendMessage(_messageController.text),
-                ),
+                    icon: const Icon(
+                      Icons.send,
+                      color: Color.fromARGB(255, 228, 142, 136),
+                    ),
+                    onPressed: () {
+                      sendMessage(_messageController.text);
+                      _scrollToEnd();
+                    }),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _scrollToEnd() {
+    Future.delayed(Duration(milliseconds: 200), () {
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    });
   }
 }
