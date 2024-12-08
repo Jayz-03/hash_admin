@@ -45,6 +45,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _signOut(BuildContext context) async {
     try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Set the user's status to inactive
+        await FirebaseDatabase.instance.ref('users/${user.uid}').update({
+          'active': false,
+          'lastSeen': DateTime.now().millisecondsSinceEpoch,
+        });
+      }
+      
       await FirebaseAuth.instance.signOut();
       Navigator.pushReplacement(
         context,

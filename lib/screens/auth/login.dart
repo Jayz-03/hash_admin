@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,18 +27,41 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = true;
       });
 
-      try {
-        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-          email: emailController.text,
-          password: passwordController.text,
-        );
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => TabNavigation()));
-      } on FirebaseAuthException catch (e) {
+      if (emailController.text == 'hash.hiv0@gmail.com') {
+        try {
+          // Perform login
+          UserCredential userCredential =
+              await _auth.signInWithEmailAndPassword(
+            email: emailController.text,
+            password: passwordController.text,
+          );
+
+          User? user = userCredential.user;
+
+          // Update the user's active status to true
+          await FirebaseDatabase.instance.ref('users/${user?.uid}').update({
+            'active': true,
+            'lastSeen': DateTime.now().millisecondsSinceEpoch,
+          });
+
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => TabNavigation()));
+        } on FirebaseAuthException catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${e.message}')),
+          );
+        } finally {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      } else {
+        // Show an error message if the email doesn't match
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.message}')),
+          SnackBar(
+              content: Center(child: Text('Invalid email or password')),
+              backgroundColor: Colors.red),
         );
-      } finally {
         setState(() {
           _isLoading = false;
         });

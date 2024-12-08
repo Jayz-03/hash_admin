@@ -365,7 +365,7 @@ class _AdminAppointmentScreenState extends State<AdminAppointmentScreen>
           labelStyle: GoogleFonts.robotoCondensed(fontSize: 16),
           tabs: const [
             Tab(text: 'Upcoming'),
-            Tab(text: 'Past'),
+            Tab(text: 'Recent'),
           ],
         ),
       ),
