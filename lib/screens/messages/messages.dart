@@ -24,8 +24,7 @@ class MessagesScreen extends StatefulWidget {
 class _MessagesScreenState extends State<MessagesScreen> {
   final TextEditingController _messageController = TextEditingController();
   final DatabaseReference _chatRef = FirebaseDatabase.instance.ref();
-  final ScrollController _scrollController =
-      ScrollController(); // Controller for auto-scrolling
+  ScrollController _scrollController = ScrollController();
   String fullname = '';
   String service = '';
 
@@ -288,6 +287,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 messageList
                     .sort((a, b) => a['timestamp'].compareTo(b['timestamp']));
 
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _scrollToEnd();
+                });
+
                 return ListView.builder(
                   controller: _scrollController, // Added ScrollController
                   itemCount: messageList.length,
@@ -386,14 +389,15 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   ),
                 ),
                 IconButton(
-                    icon: const Icon(
-                      Icons.send,
-                      color: Color.fromARGB(255, 228, 142, 136),
-                    ),
-                    onPressed: () {
-                      sendMessage(_messageController.text);
-                      _scrollToEnd();
-                    }),
+                  icon: const Icon(
+                    Icons.send,
+                    color: Color.fromARGB(255, 228, 142, 136),
+                  ),
+                  onPressed: () {
+                    sendMessage(_messageController.text);
+                    _scrollToEnd();
+                  },
+                ),
               ],
             ),
           ),
@@ -403,8 +407,12 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   void _scrollToEnd() {
-    Future.delayed(Duration(milliseconds: 200), () {
-      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-    });
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 }
