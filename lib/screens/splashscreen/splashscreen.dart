@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:hash_admin/common/tab-bar-navigation.dart';
+import 'package:hash_admin/screens/auth/login.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -13,7 +13,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     Timer(Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => TabNavigation()),
+        MaterialPageRoute(builder: (context) => LoginScreen()),
       );
     });
   }

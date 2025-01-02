@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hash_admin/screens/messages/videoCall.dart';
 import 'package:intl/intl.dart'; // Add this import for time formatting
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 class MessagesScreen extends StatefulWidget {
   final String userId;
@@ -56,13 +58,24 @@ class _MessagesScreenState extends State<MessagesScreen> {
   void sendMessage(String message) {
     if (message.isEmpty) return;
 
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    // Initialize timezone data
+    tz.initializeTimeZones();
+
+    // Get Asia/Manila timezone
+    final manila = tz.getLocation('Asia/Manila');
+
+    // Get current time in Manila timezone
+    final manilaTime = tz.TZDateTime.now(manila);
+
+    // Store timestamp in milliseconds since epoch (Manila time)
+    final timestamp = manilaTime.millisecondsSinceEpoch;
+
     _chatRef
         .child('Chats/${widget.userId}/${widget.appointmentId}/messages')
         .push()
         .set({
-      'senderId': widget.senderId,
       'message': message,
+      'senderId': widget.senderId,
       'timestamp': timestamp,
     });
 
@@ -256,8 +269,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
               builder: (context, AsyncSnapshot snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                      child: CircularProgressIndicator(
-                          color: Color.fromARGB(255, 228, 142, 136)));
+                    child: CircularProgressIndicator(
+                        color: Color.fromARGB(255, 228, 142, 136)),
+                  );
                 }
                 if (!snapshot.hasData || snapshot.data.snapshot.value == null) {
                   return Center(
@@ -287,66 +301,115 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 messageList
                     .sort((a, b) => a['timestamp'].compareTo(b['timestamp']));
 
+                // Scroll to the latest message
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   _scrollToEnd();
                 });
 
                 return ListView.builder(
-                  controller: _scrollController, // Added ScrollController
+                  controller: _scrollController,
                   itemCount: messageList.length,
                   itemBuilder: (context, index) {
                     bool isSender =
                         messageList[index]['senderId'] == widget.senderId;
                     DateTime messageTime = DateTime.fromMillisecondsSinceEpoch(
                         messageList[index]['timestamp']);
-                    String formattedTime = DateFormat('hh:mm a')
-                        .format(messageTime); // Format time
+                    String formattedTime =
+                        DateFormat('hh:mm a').format(messageTime);
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: isSender
-                            ? MainAxisAlignment.end
-                            : MainAxisAlignment.start,
-                        children: [
-                          Column(
-                            crossAxisAlignment: isSender
-                                ? CrossAxisAlignment.end
-                                : CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: 10.0,
-                                  horizontal: 16.0,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSender
-                                      ? Color.fromARGB(255, 228, 142, 136)
-                                      : Color.fromARGB(255, 238, 238, 238),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  messageList[index]['message'],
-                                  style: GoogleFonts.robotoCondensed(
-                                    fontSize: 14,
-                                    color:
-                                        isSender ? Colors.white : Colors.black,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                formattedTime, // Show time
+                    // Check for group messages by sender
+                    bool isSameSender = index > 0 &&
+                        messageList[index - 1]['senderId'] ==
+                            messageList[index]['senderId'];
+
+                    return Column(
+                      crossAxisAlignment: isSender
+                          ? CrossAxisAlignment.end
+                          : CrossAxisAlignment.start,
+                      children: [
+                        // Show date header if it's a new day
+                        if (index == 0 ||
+                            DateFormat('yyyy-MM-dd').format(
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                        messageList[index - 1]['timestamp'])) !=
+                                DateFormat('yyyy-MM-dd').format(messageTime))
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Center(
+                              child: Text(
+                                DateFormat('MMMM d, yyyy').format(messageTime),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,
                                 ),
                               ),
+                            ),
+                          ),
+                        // Message bubble
+                        Padding(
+                          padding: EdgeInsets.only(
+                            top: isSameSender ? 2.0 : 8.0,
+                            bottom: 2.0,
+                            left: isSender ? 50.0 : 16.0,
+                            right: isSender ? 16.0 : 50.0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: isSender
+                                ? MainAxisAlignment.end
+                                : MainAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: isSender
+                                    ? CrossAxisAlignment.end
+                                    : CrossAxisAlignment.start,
+                                children: [
+                                  if (!isSameSender)
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 4.0),
+                                      child: Text(
+                                        isSender ? 'You' : 'Patient',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 10.0,
+                                      horizontal: 16.0,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isSender
+                                          ? Color.fromARGB(255, 228, 142, 136)
+                                          : Color.fromARGB(255, 238, 238, 238),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      messageList[index]['message'],
+                                      style: GoogleFonts.robotoCondensed(
+                                        fontSize: 14,
+                                        color: isSender
+                                            ? Colors.white
+                                            : Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    formattedTime,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     );
                   },
                 );

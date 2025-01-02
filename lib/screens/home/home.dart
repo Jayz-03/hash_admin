@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -22,211 +23,233 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Card(
-              color: Colors.white,
-              elevation: 4,
-              margin: EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hash Organization',
-                      style: GoogleFonts.robotoCondensed(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 240, 128, 128)),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      '''HASH is a non-profit, community-based organization committed to seeing that those affected by HIV have access to the care that they deserve. Established by Desi Andrew Ching and Michael De Guzman in 2015, HASH had humble beginnings in a shared office while developing and advocating for Community-Based Screening (“CBS”) and Community Case Management programs in the Philippines. Now one of the fastest-growing organizations in HIV awareness advocacy, HASH continues to bring innovations that hope to improve the sexual health and lives of Filipinos.
-
-HASH has many years of combined experience in the field of HIV and AIDS and offers inclusive screening, prevention, treatment, and education services. The organization is located in four different areas in Metro Manila and also has dedicated volunteers ready to help on the ground.''',
-                      style: GoogleFonts.robotoCondensed(
-                          fontSize: 16, height: 1.5),
-                    ),
-                  ],
-                ),
-              ),
+            _buildInventorySection(),
+            _buildInfoCard(
+              title: 'Hash Organization',
+              content:
+                  '''HASH is a non-profit, community-based organization committed to seeing that those affected by HIV have access to the care that they deserve. Established by Desi Andrew Ching and Michael De Guzman in 2015, HASH had humble beginnings in a shared office while developing and advocating for Community-Based Screening (“CBS”) and Community Case Management programs in the Philippines. Now one of the fastest-growing organizations in HIV awareness advocacy, HASH continues to bring innovations that hope to improve the sexual health and lives of Filipinos.''',
             ),
-            Card(
-              color: Colors.white,
-              elevation: 4,
-              margin: EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'History',
-                      style: GoogleFonts.robotoCondensed(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 240, 128, 128)),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      '''HIV & AIDS Support House (HASH) was co-founded by two friends, Desi Andrew S. Ching and Michael P. De Guzman, who met as volunteers of a telephone counseling line on Human Immunodeficiency Virus and Acquired Immune Deficiency Syndrome (HIV and AIDS) in the mid-90s. By 2011, De Guzman had just returned to the country from more than 6 years of living in Cambodia while Ching had been living with HIV for about 4 years. Ching had been keenly observing and taking note of his (and other Men having Sex with Men People Living with HIVs) experiences as clients of HIV-related health services. The two agreed that something needed to be done to help improve the situation and promote the well-being of those newly diagnosed with HIV in order to positively affect treatment outcomes.
-              
-In late 2013, the two did a series of consultation meetings with friends and colleagues working in the field of HIV & AIDS, and sexual health. They developed the yet unnamed organization’s concept paper. A Board of Trustees was convened months later, who helped in coming up with the name HASH. In late July, the Board, with the participation of some volunteers, conducted its first Strategic and Operational Planning Workshop and came up with the organization’s Vision and Mission, along with a 3-year Strategic and Operational Plan. The organization was registered with the Philippine Securities and Exchange Commission in 2015.''',
-                      style: GoogleFonts.robotoCondensed(
-                          fontSize: 16, height: 1.5),
-                    ),
-                  ],
-                ),
-              ),
+            _buildInfoCard(
+              title: 'History',
+              content:
+                  '''HIV & AIDS Support House (HASH) was co-founded by two friends, Desi Andrew S. Ching and Michael P. De Guzman, who met as volunteers of a telephone counseling line on Human Immunodeficiency Virus and Acquired Immune Deficiency Syndrome (HIV and AIDS) in the mid-90s. By 2011, De Guzman had just returned to the country from more than 6 years of living in Cambodia while Ching had been living with HIV for about 4 years. The two agreed that something needed to be done to help improve the situation and promote the well-being of those newly diagnosed with HIV in order to positively affect treatment outcomes.''',
             ),
-            Card(
-              color: Colors.white,
-              elevation: 4,
-              margin: EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Flagship Programs',
-                      style: GoogleFonts.robotoCondensed(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 240, 128, 128)),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      '''● 1st to implement Community-based HIV Screening (CBS) in 2016
+            _buildInfoCard(
+              title: 'Flagship Programs',
+              content:
+                  '''● 1st to implement Community-based HIV Screening (CBS) in 2016
 ● Community case management (CCM, online and face-to-face)
 ● Training on CBS, CCM, Motivational interviewing, Intimate Partners violence
 ● Webinars on HIV, ART, SOGIE, HIV Policy Act, Mental Health
 ● 1st CSO to implement Pop-Out PrEP (community initiation/outside facility)
 ● 1st ever community-led (demedicalized) PrEP initiation in the Philippines
 ● Self test kits with more than 2,500 kits dispensed in 5 months''',
-                      style: GoogleFonts.robotoCondensed(
-                          fontSize: 16, height: 1.5),
-                    ),
-                  ],
-                ),
-              ),
             ),
-            Card(
-              color: Colors.white,
-              elevation: 4,
-              margin: EdgeInsets.only(bottom: 16),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Achievements',
-                      style: GoogleFonts.robotoCondensed(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 240, 128, 128)),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      '''● Currently the convener of Network to Stop AIDS Philippines, and a member of Network Plus Phils. Inc.
+            _buildInfoCard(
+              title: 'Achievements',
+              content:
+                  '''● Currently the convener of Network to Stop AIDS Philippines, and a member of Network Plus Phils. Inc.
 ● Seated as PLHIV CSO representative in the Quezon City STI/AIDS Council, and an active member of the Service Delivery Network of the cities of Pasay and Quezon City
 ● We have trained more than 1,400 CBS Motivators from 2016 to present
-● We have trained more than 500 Community Case Managers from 2016 to present
-● We have helped more than 35,000 KP know their status since HASH was established.
-● We have helped more than 3,000 people get on AntiRetroviral Treatment since 2016
-● We have helped more than 3,000 people get on Pre-Exposure Prophylaxis from March 2021 to the present date.
-● From March 04, 2021 - September 29, 2022, we were able to connect 27,220 people to the services they needed through our social media efforts.
-● In 2023, we served more than 15,000 people online.
-● We were able to establish a Trans Health and Literacy program, which touched the lives of 120 trans women
-● HASH’s Community-Based HIV Screening program was awarded Project of the Year during the 2019 Ripple Awards hosted by LoveYourself
-● HASH was awarded a Special Recognition for Case Finding and PrEP during the 2022 and 2023 Quilts Awards respectively, hosted by the EpIC Project.''',
-                      style: GoogleFonts.robotoCondensed(
-                          fontSize: 16, height: 1.5),
-                    ),
-                  ],
+● We have helped more than 35,000 KP know their status since HASH was established.''',
+            ),
+            _buildSocialMediaHandles(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInventorySection() {
+    return StreamBuilder<DatabaseEvent>(
+      stream: FirebaseDatabase.instance
+          .ref()
+          .child('Inventory') // Firebase Database reference
+          .onValue,
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+          // Parse data from Firebase snapshot
+          final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+
+          // Extract specific inventory items
+          final prepStocks = data['prep_medicine']['stocks'] ?? 'N/A';
+          final testKitStocks = data['test_kits']['stocks'] ?? 'N/A';
+
+          // Create the services list dynamically
+          final List<Map<String, dynamic>> services = [
+            {
+              'imageUrl': 'assets/images/s1.png',
+              'title': 'HIV Screening/Test',
+              'description': 'This service is ONLY for old PrEP clients.',
+              'stocks': testKitStocks,
+            },
+            {
+              'imageUrl': 'assets/images/s2.png',
+              'title': 'PrEP Refill',
+              'description': 'New PrEP bottle service.',
+              'stocks': prepStocks,
+            },
+            {
+              'imageUrl': 'assets/images/s3.png',
+              'title': 'PrEP: NEW CLIENT',
+              'description':
+                  'HIV, Hepatitis B, Syphilis test during appointment.',
+              'stocks': prepStocks,
+            },
+          ];
+
+          // Pass services to the UI builder
+          return _buildServiceList(services);
+        }
+
+        // Show loading indicator while waiting for data
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+
+  Widget _buildServiceList(List<Map<String, dynamic>> services) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: services.map((service) {
+        final int stockCount = int.tryParse(service['stocks'].toString()) ?? 0;
+
+        // Determine stock status and colors
+        String stockStatus;
+        Color stockColor;
+
+        if (stockCount > 10) {
+          stockStatus = "In Stock";
+          stockColor = Colors.green;
+        } else if (stockCount > 0) {
+          stockStatus = "Low Stock";
+          stockColor = Colors.orange;
+        } else {
+          stockStatus = "Out of Stock";
+          stockColor = Colors.red;
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 5),
+          child: Card(
+            elevation: 4,
+            color: Colors.white,
+            child: ListTile(
+              leading: service['imageUrl'] != null
+                  ? Image.asset(
+                      service['imageUrl']!,
+                      width: 80,
+                      height: 80,
+                    )
+                  : const SizedBox(width: 80, height: 80),
+              title: Text(
+                service['title'] ?? 'No Title',
+                style: GoogleFonts.robotoCondensed(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 228, 142, 136),
                 ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    service['description'] ?? 'No Description',
+                    style: GoogleFonts.robotoCondensed(
+                      fontSize: 14,
+                      color: const Color.fromARGB(255, 125, 125, 125),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '$stockStatus • ($stockCount)',
+                    style: GoogleFonts.robotoCondensed(
+                      fontSize: 14,
+                      color: stockColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
-            Container(
-              width: double.infinity,
-              child: Card(
-                color: Colors.white,
-                elevation: 4,
-                margin: EdgeInsets.only(bottom: 16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Social Media Handles',
-                        style: GoogleFonts.robotoCondensed(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 240, 128, 128)),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              _launchURL(
-                                  'https://www.facebook.com/HASHPilipinas');
-                            },
-                            icon: PhosphorIcon(
-                              PhosphorIconsFill.facebookLogo,
-                              size: 30,
-                              color: Colors.white,
-                            ),
-                            label: Text(
-                              'Facebook',
-                              style: GoogleFonts.robotoCondensed(
-                                  fontSize: 16, color: Colors.white),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Color.fromARGB(255, 240, 128, 128),
-                              textStyle: GoogleFonts.robotoCondensed(
-                                  fontSize: 16,
-                                  color: Color.fromARGB(255, 240, 128, 128)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              _launchURL('https://twitter.com/HASH_Support');
-                            },
-                            icon: PhosphorIcon(
-                              PhosphorIconsFill.twitterLogo,
-                              size: 30,
-                              color: Colors.white,
-                            ),
-                            label: Text(
-                              'Twitter',
-                              style: GoogleFonts.robotoCondensed(
-                                  fontSize: 16, color: Colors.white),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Color.fromARGB(255, 240, 128, 128),
-                              textStyle: GoogleFonts.robotoCondensed(
-                                  fontSize: 16,
-                                  color: Color.fromARGB(255, 240, 128, 128)),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildInfoCard({required String title, required String content}) {
+    return Card(
+      color: Colors.white,
+      elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: GoogleFonts.robotoCondensed(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: const Color.fromARGB(255, 240, 128, 128)),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              content,
+              style: GoogleFonts.robotoCondensed(fontSize: 16, height: 1.5),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSocialMediaHandles() {
+    final List<Map<String, dynamic>> socialMediaLinks = [
+      {
+        'icon': PhosphorIconsFill.facebookLogo,
+        'url': 'https://www.facebook.com/HASHOrganization',
+        'color': Colors.blue,
+      },
+      {
+        'icon': PhosphorIconsFill.twitterLogo,
+        'url': 'https://twitter.com/HASHOrganization',
+        'color': Colors.lightBlue,
+      },
+    ];
+
+    return Card(
+      color: Colors.white,
+      elevation: 4,
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Follow Us On',
+              style: GoogleFonts.robotoCondensed(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: const Color.fromARGB(255, 240, 128, 128),
               ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: socialMediaLinks.map((social) {
+                return IconButton(
+                  icon: Icon(social['icon']),
+                  color: social['color'],
+                  iconSize: 32,
+                  onPressed: () {
+                    _launchURL(social['url']);
+                  },
+                );
+              }).toList(),
             ),
           ],
         ),

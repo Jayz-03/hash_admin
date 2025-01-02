@@ -212,35 +212,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Continue as a guest?",
-                            style: GoogleFonts.robotoCondensed(
-                              fontSize: 14,
-                              color: Colors.black,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => TabNavigation()),
-                              );
-                            },
-                            child: Text(
-                              "Go here!",
-                              style: GoogleFonts.robotoCondensed(
-                                fontSize: 14,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 40),
                     ],
                   ),
                 ),
